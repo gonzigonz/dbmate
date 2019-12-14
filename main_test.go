@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func testContext(t *testing.T, u *url.URL) *cli.Context {
@@ -17,7 +17,8 @@ func testContext(t *testing.T, u *url.URL) *cli.Context {
 	app := NewApp()
 	flagset := flag.NewFlagSet(app.Name, flag.ContinueOnError)
 	for _, f := range app.Flags {
-		f.Apply(flagset)
+		err := f.Apply(flagset)
+		require.NoError(t, err)
 	}
 
 	return cli.NewContext(app, flagset, nil)

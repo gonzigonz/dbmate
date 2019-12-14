@@ -8,7 +8,7 @@ import (
 
 	"github.com/amacneil/dbmate/pkg/dbmate"
 	"github.com/joho/godotenv"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
@@ -30,28 +30,31 @@ func NewApp() *cli.App {
 	app.Version = dbmate.Version
 
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "env, e",
-			Value: "DATABASE_URL",
-			Usage: "specify an environment variable containing the database URL",
+		&cli.StringFlag{
+			Name:    "env",
+			Aliases: []string{"e"},
+			Value:   "DATABASE_URL",
+			Usage:   "specify an environment variable containing the database URL",
 		},
-		cli.StringFlag{
-			Name:  "migrations-dir, d",
-			Value: dbmate.DefaultMigrationsDir,
-			Usage: "specify the directory containing migration files",
+		&cli.StringFlag{
+			Name:    "migrations-dir",
+			Aliases: []string{"d"},
+			Value:   dbmate.DefaultMigrationsDir,
+			Usage:   "specify the directory containing migration files",
 		},
-		cli.StringFlag{
-			Name:  "schema-file, s",
-			Value: dbmate.DefaultSchemaFile,
-			Usage: "specify the schema file location",
+		&cli.StringFlag{
+			Name:    "schema-file",
+			Aliases: []string{"s"},
+			Value:   dbmate.DefaultSchemaFile,
+			Usage:   "specify the schema file location",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "no-dump-schema",
 			Usage: "don't update the schema file on migrate/rollback",
 		},
 	}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:    "new",
 			Aliases: []string{"n"},
@@ -135,9 +138,9 @@ func action(f func(*dbmate.DB, *cli.Context) error) cli.ActionFunc {
 			return err
 		}
 		db := dbmate.New(u)
-		db.AutoDumpSchema = !c.GlobalBool("no-dump-schema")
-		db.MigrationsDir = c.GlobalString("migrations-dir")
-		db.SchemaFile = c.GlobalString("schema-file")
+		db.AutoDumpSchema = !c.Bool("no-dump-schema")
+		db.MigrationsDir = c.String("migrations-dir")
+		db.SchemaFile = c.String("schema-file")
 
 		return f(db, c)
 	}
@@ -145,7 +148,7 @@ func action(f func(*dbmate.DB, *cli.Context) error) cli.ActionFunc {
 
 // getDatabaseURL returns the current environment database url
 func getDatabaseURL(c *cli.Context) (u *url.URL, err error) {
-	env := c.GlobalString("env")
+	env := c.String("env")
 	value := os.Getenv(env)
 
 	return url.Parse(value)
